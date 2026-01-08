@@ -11,6 +11,17 @@ const queryContent = document.getElementById('queryContent');
 const errorSection = document.getElementById('errorSection');
 const errorMessage = document.getElementById('errorMessage');
 
+// Load saved API key from localStorage
+const savedApiKey = localStorage.getItem('claude_api_key');
+if (savedApiKey) {
+    apiKeyInput.value = savedApiKey;
+}
+
+// Save API key to localStorage when changed
+apiKeyInput.addEventListener('change', () => {
+    localStorage.setItem('claude_api_key', apiKeyInput.value);
+});
+
 // Make handleQuery available globally
 window.handleQuery = handleQuery;
 
