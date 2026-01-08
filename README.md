@@ -24,6 +24,10 @@
         "What indicators are associated with the Salt Typhoon campaign?" - no
         "Who is behind the Salt Typhoon campaign?" - no
 
+## Components
+- user input (english) to TypeQL converter: LLM guided using prompt augmentation technique
+- knowledge base: in TypeDB, accessible via TypeDB MCP Server
+
 ## Setup
 
 ```
