@@ -8,6 +8,7 @@ const askButton = document.getElementById('askButton');
 const responseSection = document.getElementById('responseSection');
 const answerContent = document.getElementById('answerContent');
 const queryContent = document.getElementById('queryContent');
+const queryResponseContent = document.getElementById('queryResponseContent');
 const errorSection = document.getElementById('errorSection');
 const errorMessage = document.getElementById('errorMessage');
 
@@ -72,7 +73,7 @@ async function handleQuery() {
         const answer = await formatAnswer(question, results, apiKey);
 
         // Step 4: Display results
-        showResponse(answer, typeql);
+        showResponse(answer, typeql, results);
 
     } catch (error) {
         console.error('Error:', error);
@@ -212,9 +213,21 @@ function setLoading(loading) {
     askButton.querySelector('.btn-loading').hidden = !loading;
 }
 
-function showResponse(answer, query) {
+function showResponse(answer, query, results = null) {
     answerContent.textContent = answer;
     queryContent.textContent = query;
+
+    // Handle results display - parse if it's a JSON string
+    let displayResults = results;
+    if (typeof results === 'string') {
+        try {
+            displayResults = JSON.parse(results);
+        } catch (e) {
+            // If it's not valid JSON, show as-is
+            displayResults = results;
+        }
+    }
+    queryResponseContent.textContent = displayResults ? JSON.stringify(displayResults, null, 2) : '-- No results --';
     responseSection.hidden = false;
 }
 
