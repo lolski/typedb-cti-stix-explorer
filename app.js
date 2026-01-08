@@ -120,7 +120,9 @@ async function executeQuery(typeql, mcpUrl) {
         params: {
             name: 'query',
             arguments: {
-                query: typeql
+                query: typeql,
+                database: 'stix',
+                transaction_type: 'read'
             }
         }
     };
