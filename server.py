@@ -8,7 +8,7 @@ from flask_cors import CORS
 from fastmcp import Client
 import asyncio
 
-app = Flask(__name__, static_folder='.')
+app = Flask(__name__, static_folder='ui')
 CORS(app)
 
 MCP_URL = "http://localhost:8001/mcp"
@@ -38,12 +38,12 @@ def run_async(coro):
 
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('ui', 'index.html')
 
 
 @app.route('/<path:filename>')
 def static_files(filename):
-    return send_from_directory('.', filename)
+    return send_from_directory('ui', filename)
 
 
 @app.route('/mcp', methods=['POST'])
