@@ -188,18 +188,27 @@ header h1 {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.answer-box, .query-box {
+.answer-box,
+.query-box {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
 }
 
-.answer-box h3, .query-box h3 {
+.answer-box h3,
+.query-box h3 {
   font-size: 0.9rem;
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
@@ -209,6 +218,37 @@ header h1 {
 .answer-content {
   font-size: 1rem;
   line-height: 1.7;
+}
+
+/* Markdown styles */
+.answer-content p {
+  margin-bottom: 0.75rem;
+}
+
+.answer-content p:last-child {
+  margin-bottom: 0;
+}
+
+.answer-content ul,
+.answer-content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.answer-content li {
+  margin-bottom: 0.25rem;
+}
+
+.answer-content strong {
+  color: var(--accent-secondary);
+}
+
+.answer-content code {
+  background: var(--bg-tertiary);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
 }
 
 .query-content {
@@ -257,15 +297,15 @@ footer {
   .container {
     padding: 1.5rem 1rem;
   }
-  
+
   header h1 {
     font-size: 1.5rem;
   }
-  
+
   .input-wrapper {
     flex-direction: column;
   }
-  
+
   #askButton {
     width: 100%;
     justify-content: center;

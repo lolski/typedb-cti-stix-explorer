@@ -214,7 +214,8 @@ function setLoading(loading) {
 }
 
 function showResponse(answer, query, results = null) {
-    answerContent.textContent = answer;
+    // Render markdown in answer
+    answerContent.innerHTML = marked.parse(answer);
     queryContent.textContent = query;
 
     // Handle results display - parse if it's a JSON string
