@@ -147,11 +147,13 @@ async function executeQuery(typeql, mcpUrl) {
         body: JSON.stringify(rpcRequest)
     });
 
-    if (!response.ok) {
-        throw new Error(`MCP error: ${response.statusText}`);
-    }
-
     const data = await response.json();
+
+    // Handle HTTP errors with body details
+    if (!response.ok) {
+        const errorDetail = data.error?.message || JSON.stringify(data) || response.statusText;
+        throw new Error(`MCP error (${response.status}): ${errorDetail}`);
+    }
 
     // Handle JSON-RPC error
     if (data.error) {
