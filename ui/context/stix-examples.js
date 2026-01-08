@@ -4,6 +4,16 @@
 export const STIX_EXAMPLES = `
 ## Example Queries
 
+### Get the schema / What data may be stored
+\`\`\`typeql
+match $x sub $_;
+\`\`\`
+
+### Get the data / What data is actually stored
+\`\`\`typeql
+match $t isa $x;
+\`\`\`
+
 ### Find all threat actors:
 \`\`\`typeql
 match $ta isa threat-actor, has name $name;
@@ -56,5 +66,27 @@ fetch { "name": $name, "pattern": $pattern };
 \`\`\`typeql
 match $coa isa course-of-action, has name $name, has description $desc;
 fetch { "name": $name, "description": $desc };
+\`\`\`
+
+### Match syntax which includes relation
+
+Right:
+\`\`\`typeql
+match
+  $r ($ap, $entity);
+fetch {
+  "entity": $name,
+};
+\`\`\`
+
+### Deprecated 2.x queries (must not be used)
+- for getting the schema
+\`\`\`typeql
+match $t sub thing;
+\`\`\`
+
+- for printing all data
+\`\`\`typeql
+match $t sub thing;
 \`\`\`
 `;

@@ -58,6 +58,7 @@ def proxy_mcp():
         arguments = params.get('arguments', {})
         
         # Call MCP tool
+        print(f"MCP Call: {tool_name}: {arguments}")
         result = run_async(call_mcp_tool(tool_name, arguments))
         
         # Extract text content
