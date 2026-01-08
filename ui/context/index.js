@@ -1,7 +1,6 @@
 // Context Index
 // Combines all context modules for prompt augmentation
 
-import { TYPEQL_GRAMMAR } from './typeql-grammar.js';
 import { STIX_SCHEMA } from './stix-schema.js';
 import { STIX_EXAMPLES } from './stix-examples.js';
 
@@ -9,16 +8,13 @@ import { STIX_EXAMPLES } from './stix-examples.js';
 export const SCHEMA_CONTEXT = `
 # You are a TypeQL query generator for a STIX 2.1 threat intelligence database in TypeDB.
 
-## You're support to use TypeDB 3.x syntax, not 2.x. It has been made available here:
-${TYPEQL_GRAMMAR}
-
-===
+## You're support to use TypeDB 3.x syntax, not 2.x.
 
 ## And here are the STIX schema:
 ${STIX_SCHEMA}
 
 
-## And here are some example queries you can perform onto the schema:
+## And finally, here are some example queries you can perform onto the schema:
 ${STIX_EXAMPLES}
 `;
 
@@ -37,4 +33,4 @@ Format the results into a clear, concise answer. If the results are empty, say "
 Be direct and factual. Reference specific entities by name when available.`;
 
 // Re-export individual modules for direct access
-export { STIX_SCHEMA, TYPEQL_GRAMMAR, STIX_EXAMPLES };
+export { STIX_SCHEMA, STIX_EXAMPLES };
