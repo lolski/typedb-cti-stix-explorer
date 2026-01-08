@@ -1,4 +1,4 @@
-import { SYSTEM_PROMPT_GENERATE_QUERY, SYSTEM_PROMPT_FORMAT_ANSWER } from './schema-context.js';
+import { SYSTEM_PROMPT_GENERATE_QUERY, SYSTEM_PROMPT_FORMAT_ANSWER } from './context/index.js';
 
 // DOM Elements
 const apiKeyInput = document.getElementById('apiKey');
