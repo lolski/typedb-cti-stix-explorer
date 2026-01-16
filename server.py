@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
 """
-STIX Q&A Server - Flask + FastMCP Client (HTTP transport)
+STIX Q&A Server - REST API with LLM integration
 """
 
-from flask import Flask, send_from_directory, request, jsonify
+import os
+import json
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from fastmcp import Client
 import asyncio
+import httpx
 
-app = Flask(__name__, static_folder='ui')
+from context import SYSTEM_PROMPT_GENERATE_QUERY, SYSTEM_PROMPT_FORMAT_ANSWER
+
+app = Flask(__name__)
 CORS(app)
 
-MCP_URL = "http://localhost:8001/mcp"
+# Configuration
+MCP_URL = os.environ.get("MCP_URL", "http://localhost:8001/mcp")
+CLAUDE_API_KEY = os.environ.get("CLAUDE_API_KEY", "")
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
 
 
 async def call_mcp_tool(tool_name: str, arguments: dict):
@@ -26,7 +34,6 @@ def run_async(coro):
     try:
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            # If there's already a running loop, create a new one
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 future = pool.submit(asyncio.run, coro)
@@ -36,56 +43,130 @@ def run_async(coro):
         return asyncio.run(coro)
 
 
-@app.route('/')
-def index():
-    return send_from_directory('ui', 'index.html')
+async def call_claude(system_prompt: str, user_message: str) -> str:
+    """Call Claude API with the given prompts"""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": CLAUDE_API_KEY,
+                "anthropic-version": "2023-06-01"
+            },
+            json={
+                "model": CLAUDE_MODEL,
+                "max_tokens": 1024,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": user_message}]
+            },
+            timeout=60.0
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get("content", [{}])[0].get("text", "").strip()
 
 
-@app.route('/<path:filename>')
-def static_files(filename):
-    return send_from_directory('ui', filename)
+def generate_typeql(question: str) -> str:
+    """Generate TypeQL query from natural language question"""
+    return run_async(call_claude(SYSTEM_PROMPT_GENERATE_QUERY, question))
 
 
-@app.route('/mcp', methods=['POST'])
-def proxy_mcp():
-    """Handle MCP tool calls"""
+def format_answer(question: str, results: str) -> str:
+    """Format query results into human-readable answer"""
+    if not results or results == "[]":
+        return "No data found in the threat intelligence database for this query."
+    
+    user_message = f"Question: {question}\n\nQuery Results:\n{results}"
+    return run_async(call_claude(SYSTEM_PROMPT_FORMAT_ANSWER, user_message))
+
+
+def execute_query(typeql: str) -> str:
+    """Execute TypeQL query via MCP"""
+    result = run_async(call_mcp_tool("query", {
+        "query": typeql,
+        "database": "stix",
+        "transaction_type": "read"
+    }))
+    
+    # Extract text content from MCP response
+    if hasattr(result, 'content') and result.content:
+        return result.content[0].text if hasattr(result.content[0], 'text') else str(result.content[0])
+    return str(result)
+
+
+@app.route('/query', methods=['POST'])
+def query():
+    """
+    Main endpoint for natural language queries.
+    
+    Request body:
+        {"question": "What threat actors are in the database?"}
+    
+    Response:
+        {
+            "answer": "Human-readable answer...",
+            "typeql_query": "match $ta isa threat-actor...",
+            "raw_results": "..."
+        }
+    """
     try:
         data = request.get_json()
-        print(f"→ Request: {data}")
+        question = data.get('question', '').strip()
         
-        params = data.get('params', {})
-        tool_name = params.get('name', 'query')
-        arguments = params.get('arguments', {})
+        if not question:
+            return jsonify({"error": "Missing 'question' field"}), 400
         
-        # Call MCP tool
-        print(f"MCP Call: {tool_name}: {arguments}")
-        result = run_async(call_mcp_tool(tool_name, arguments))
+        if not CLAUDE_API_KEY:
+            return jsonify({"error": "CLAUDE_API_KEY environment variable not set"}), 500
         
-        # Extract text content
-        if hasattr(result, 'content') and result.content:
-            response_data = result.content[0].text if hasattr(result.content[0], 'text') else str(result.content[0])
-        else:
-            response_data = str(result)
+        print(f"→ Question: {question}")
         
-        print(f"← Result: {response_data[:200]}...")
+        # Step 1: Generate TypeQL query
+        typeql = generate_typeql(question)
+        print(f"→ TypeQL: {typeql}")
+        
+        if typeql == "CANNOT_QUERY":
+            return jsonify({
+                "answer": "This question cannot be answered with the available threat intelligence data.",
+                "typeql_query": None,
+                "raw_results": None
+            })
+        
+        # Step 2: Execute query via MCP
+        raw_results = execute_query(typeql)
+        print(f"→ Results: {raw_results[:200]}..." if len(raw_results) > 200 else f"→ Results: {raw_results}")
+        
+        # Step 3: Format answer
+        answer = format_answer(question, raw_results)
+        print(f"→ Answer: {answer[:200]}..." if len(answer) > 200 else f"→ Answer: {answer}")
         
         return jsonify({
-            "jsonrpc": "2.0",
-            "id": data.get("id"),
-            "result": response_data
+            "answer": answer,
+            "typeql_query": typeql,
+            "raw_results": raw_results
         })
         
+    except httpx.HTTPStatusError as e:
+        error_body = e.response.text
+        print(f"Claude API error: {error_body}")
+        return jsonify({"error": f"Claude API error: {error_body}"}), 500
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({
-            "jsonrpc": "2.0", 
-            "id": request.get_json().get("id") if request.get_json() else None,
-            "error": {"code": -32000, "message": str(e)}
-        }), 500
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({"status": "ok"})
 
 
 if __name__ == '__main__':
     print(f"🚀 STIX Q&A Server running at http://localhost:3000")
-    print(f"   Connecting to MCP at {MCP_URL}\n")
+    print(f"   MCP endpoint: {MCP_URL}")
+    print(f"   Claude model: {CLAUDE_MODEL}")
+    if not CLAUDE_API_KEY:
+        print("   ⚠️  CLAUDE_API_KEY not set!")
+    print()
     app.run(port=3000, debug=False)
