@@ -299,7 +299,11 @@ Once the backend is running, usage is simple.
 
 A client sends a request such as:
 
-> “Which threat actors have used malware related to Log4Shell?”
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Which threat actors have used malware related to Log4Shell?"}'
+```
 
 The backend:
 
