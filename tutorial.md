@@ -313,6 +313,66 @@ The backend:
 
 No schema knowledge or query language is required by the user.
 
+### Example queries
+
+Here are more examples of questions you can ask:
+
+**Basic queries:**
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "List all attack patterns"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What indicators (IOCs) are tracked?"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What threat actors are in the database?"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What campaigns exist?"}'
+```
+
+**Relational queries:**
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Show all threat actors and related campaigns"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Show all campaigns and related attack patterns"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Show all campaigns, related attack patterns and also related threat actors"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What indicators are associated with the Salt Typhoon campaign?"}'
+```
+
+```bash
+curl -X POST http://localhost:3000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Who is behind the Salt Typhoon campaign?"}'
+```
+
 ---
 
 ## Conclusion
