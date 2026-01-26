@@ -343,3 +343,11 @@ We have built a **Prompt-Guided Knowledge Graph Explorer** as a REST API by comb
 This enables **guided exploration of a STIX datastore** through natural language—without embeddings, without vector search, and without building a UI.
 
 More importantly, this pattern generalizes to any TypeDB knowledge graph. If your data is structured, connected, and meaningful, it is ready for Prompt-Guided Knowledge Graph Exploration.
+
+## Full Working Example
+
+For a complete, working implementation of this tutorial, visit the GitHub repository:
+
+**[https://github.com/lolski/typedb-audio-knowledge-graph-ml](https://github.com/lolski/typedb-audio-knowledge-graph-ml)**
+
+
